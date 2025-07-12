@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Visualizer - Evolution Gaming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2E4053 0%, #1B2631 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .input-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .input-section h2 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #E74C3C, #C0392B);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #2980B9, #1F618D);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #F39C12, #E67E22);
+        }
+        
+        .result-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: none;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+        
+        .table-name {
+            font-size: 2.5rem;
+            color: #FFD700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-weight: bold;
+            color: #FFD700;
+            font-size: 16px;
+        }
+        
+        .roulette-wheel {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 30px auto;
+            border-radius: 50%;
+            background: radial-gradient(circle, #8B4513 0%, #654321 50%, #2F1B0C 100%);
+            border: 10px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 50px rgba(255,215,0,0.3);
+        }
+        
+        .wheel-center {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #2C3E50, #34495E);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        
+        .winning-number {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 25px rgba(255,215,0,0.6);
+            animation: numberGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes numberGlow {
+            0%, 100% { box-shadow: 0 0 25px rgba(255,215,0,0.6); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.9); }
+        }
+        
+        .roulette-board {
+            background: #0F4C3A;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #FFD700;
+        }
+        
+        .board-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #FFD700;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+        
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 3px;
+            margin-bottom: 20px;
+        }
+        
+        .number-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .number-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        
+        .number-cell.red {
+            background: #DC143C;
+            color: white;
+        }
+        
+        .number-cell.black {
+            background: #2F2F2F;
+            color: white;
+        }
+        
+        .number-cell.green {
+            background: #228B22;
+            color: white;
+        }
+        
+        .number-cell.bet {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
+        }
+        
+        .number-cell.winning {
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 25px rgba(255,215,0,0.8);
+            animation: winningPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes winningPulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .bet-amount {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FFD700;
+            color: #000;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .outside-bets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .outside-bet {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .outside-bet.bet {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.2);
+        }
+        
+        .bets-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .bets-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .bet-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .bet-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+        
+        .bet-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .bet-details {
+            text-align: right;
+        }
+        
+        .bet-amount-display {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .bet-payout {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .bet-win {
+            color: #27AE60;
+        }
+        
+        .bet-lose {
+            color: #E74C3C;
+        }
+        
+        .summary-section {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 3px solid rgba(255,215,0,0.5);
+            text-align: center;
+        }
+        
+        .summary-title {
+            font-size: 2rem;
+            color: #FFD700;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .summary-item {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .summary-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .summary-label {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .strategy-analysis {
+            background: rgba(255,215,0,0.1);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .error, .success, .loading {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .error {
+            background: linear-gradient(45deg, #E74C3C, #C0392B);
+            color: white;
+        }
+        
+        .success {
+            background: linear-gradient(45deg, #27AE60, #229954);
+            color: white;
+        }
+        
+        .loading {
+            background: rgba(0,0,0,0.3);
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .numbers-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .number-cell {
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+            
+            .roulette-wheel {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .wheel-center {
+                width: 80px;
+                height: 80px;
+                font-size: 1.5rem;
+            }
+            
+            .bets-analysis {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Roulette Visualizer</h1>
+        <p>Evolution Gaming Roulette oyunlarınızı görselleştirin</p>
+    </div>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>📋 Roulette JSON Verinizi Yapıştırın</h2>
+            <textarea 
+                id="jsonInput" 
+                placeholder='{"uuid": "...", "data": {"gameProvider": "evolution", "gameType": "roulette", ...}}'
+            ></textarea>
+            <div class="buttons">
+                <button class="btn" onclick="visualizeRoulette()">🎯 Roulette Görselleştir</button>
+                <button class="btn btn-secondary" onclick="loadExample()">📝 Örnek Yükle</button>
+                <button class="btn btn-warning" onclick="clearAll()">🗑️ Temizle</button>
+            </div>
+        </div>
+        
+        <div class="error" id="errorMessage"></div>
+        <div class="success" id="successMessage"></div>
+        
+        <div class="loading" id="loadingMessage">
+            <div class="spinner"></div>
+            <p>Roulette masası hazırlanıyor...</p>
+        </div>
+        
+        <div class="result-section" id="resultSection">
+            <div id="rouletteContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Örnek Roulette JSON verisi
+        const exampleJSON = {
+            "uuid": "d11df7d2-1340-433b-b070-57c222daf9e5",
+            "timestamp": "2025-07-12T15:20:26.597454944",
+            "data": {
+                "id": "18516c540030a4ff99d8f5ba",
+                "gameProvider": "evolution",
+                "gameSubProvider": "evolution",
+                "startedAt": "2025-07-12T06:13:58.060Z",
+                "settledAt": "2025-07-12T06:14:44.802Z",
+                "status": "Resolved",
+                "gameType": "roulette",
+                "table": {
+                    "id": "7x0b1tgh7agmf6hv",
+                    "name": "Immersive Roulette"
+                },
+                "dealer": {
+                    "uid": "tts181107_______",
+                    "name": "Inna"
+                },
+                "currency": "EUR",
+                "participants": [{
+                    "casinoId": "gtec3cw000000001",
+                    "playerId": "12554308",
+                    "screenName": "CoseqaeiS",
+                    "currency": "TRY",
+                    "bets": [
+                        {
+                            "code": "ROU_0Green",
+                            "stake": 4000,
+                            "payout": 0,
+                            "placedOn": "2025-07-12T06:14:21.412Z"
+                        },
+                        {
+                            "code": "ROU_9Red",
+                            "stake": 4000,
+                            "payout": 144000,
+                            "placedOn": "2025-07-12T06:14:21.412Z"
+                        }
+                    ],
+                    "betCoverage": {
+                        "simple": 0.51
+                    }
+                }],
+                "result": {
+                    "outcomes": [{
+                        "number": "9",
+                        "type": "Odd",
+                        "color": "Red"
+                    }]
+                },
+                "wager": 1616.46,
+                "payout": 3062.76
+            }
+        };
+
+        // Bahis miktarını formatla
+        function formatBetAmount(amount) {
+            if (amount >= 1000000) {
+                return (amount / 1000000).toFixed(1).replace('.0', '') + 'M';
+            } else if (amount >= 1000) {
+                return (amount / 1000).toFixed(1).replace('.0', '') + 'k';
+            } else {
+                return amount.toString();
+            }
+        }
+
+        // Roulette sayıları ve renkleri
+        const rouletteNumbers = {
+            0: 'green', 1: 'red', 2: 'black', 3: 'red', 4: 'black', 5: 'red', 6: 'black',
+            7: 'red', 8: 'black', 9: 'red', 10: 'black', 11: 'black', 12: 'red',
+            13: 'black', 14: 'red', 15: 'black', 16: 'red', 17: 'black', 18: 'red',
+            19: 'red', 20: 'black', 21: 'red', 22: 'black', 23: 'red', 24: 'black',
+            25: 'red', 26: 'black', 27: 'red', 28: 'black', 29: 'black', 30: 'red',
+            31: 'black', 32: 'red', 33: 'black', 34: 'red', 35: 'black', 36: 'red'
+        };
+
+        function showMessage(type, message) {
+            const errorEl = document.getElementById('errorMessage');
+            const successEl = document.getElementById('successMessage');
+            
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+            
+            if (type === 'error') {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            } else {
+                successEl.textContent = message;
+                successEl.style.display = 'block';
+            }
+            
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+                successEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function parseRouletteCode(code) {
+            if (code.includes('0Green')) return { number: 0, type: 'Zero' };
+            
+            const match = code.match(/ROU_(\d+)(Red|Black)/);
+            if (match) {
+                return {
+                    number: parseInt(match[1]),
+                    color: match[2].toLowerCase()
+                };
+            }
+            return null;
+        }
+
+        function getBetType(code) {
+            const betTypes = {
+                'ROU_Red': 'Kırmızı',
+                'ROU_Black': 'Siyah', 
+                'ROU_Odd': 'Tek',
+                'ROU_Even': 'Çift',
+                'ROU_1to18': '1-18',
+                'ROU_19to36': '19-36',
+                'ROU_1st12': '1-12',
+                'ROU_2nd12': '13-24',
+                'ROU_3rd12': '25-36',
+                'ROU_Column1': '1. Sütun',
+                'ROU_Column2': '2. Sütun',
+                'ROU_Column3': '3. Sütun'
+            };
+            
+            if (code.includes('0Green')) return '0 (Yeşil)';
+            
+            const parsed = parseRouletteCode(code);
+            if (parsed) {
+                return `${parsed.number} (${parsed.color === 'red' ? 'Kırmızı' : 'Siyah'})`;
+            }
+            
+            return betTypes[code] || code.replace('ROU_', '');
+        }
+
+        function generateRouletteBoard(bets, winningNumber) {
+            const betMap = new Map();
+            bets.forEach(bet => {
+                const parsed = parseRouletteCode(bet.code);
+                if (parsed) {
+                    betMap.set(parsed.number, bet);
+                }
+            });
+
+            let boardHTML = '<div class="roulette-board">';
+            boardHTML += '<div class="board-title">🎯 Roulette Masası</div>';
+            
+            // Zero
+            const zeroBet = betMap.get(0);
+            boardHTML += `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div class="number-cell green ${zeroBet ? 'bet' : ''} ${winningNumber == 0 ? 'winning' : ''}" 
+                         style="display: inline-block; width: 80px; height: 60px; font-size: 20px;">
+                        0
+                        ${zeroBet ? `<div class="bet-amount">${formatBetAmount(zeroBet.stake)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Numbers 1-36
+            boardHTML += '<div class="numbers-grid">';
+            for (let i = 1; i <= 36; i++) {
+                const color = rouletteNumbers[i];
+                const bet = betMap.get(i);
+                const isWinning = winningNumber == i;
+                
+                boardHTML += `
+                    <div class="number-cell ${color} ${bet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
+                         title="Sayı ${i} - ${color === 'red' ? 'Kırmızı' : 'Siyah'}">
+                        ${i}
+                        ${bet ? `<div class="bet-amount">${formatBetAmount(bet.stake)}</div>` : ''}
+                    </div>
+                `;
+            }
+            boardHTML += '</div>';
+            
+            boardHTML += '</div>';
+            return boardHTML;
+        }
+
+        function generateRouletteWheel(winningNumber, winningColor) {
+            const colorClass = winningColor === 'Red' ? 'red' : 
+                              winningColor === 'Black' ? 'black' : 'green';
+            
+            return `
+                <div class="roulette-wheel">
+                    <div class="winning-number ${colorClass}">${winningNumber}</div>
+                    <div class="wheel-center">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1rem; opacity: 0.8;">Kazanan</div>
+                            <div>${winningNumber}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function analyzeStrategy(bets, winningNumber) {
+            const totalBets = bets.length;
+            const coverage = totalBets / 37; // 37 toplam sayı (0-36)
+            const straightBets = bets.filter(bet => parseRouletteCode(bet.code)).length;
+            const winningBets = bets.filter(bet => bet.payout > bet.stake).length;
+            
+            let strategy = '';
+            
+            if (coverage > 0.5) {
+                strategy = '🎯 Yüksek Kapsama Stratejisi - Çok sayıda sayıya bahis';
+            } else if (coverage > 0.3) {
+                strategy = '⚖️ Orta Kapsama Stratejisi - Dengeli yaklaşım';
+            } else {
+                strategy = '🎲 Düşük Kapsama Stratejisi - Seçici bahisler';
+            }
+            
+            const riskLevel = coverage > 0.4 ? 'Düşük Risk' : 
+                             coverage > 0.2 ? 'Orta Risk' : 'Yüksek Risk';
+            
+            return {
+                strategy,
+                riskLevel,
+                coverage: (coverage * 100).toFixed(1),
+                straightBets,
+                winningBets,
+                totalBets
+            };
+        }
+
+        function generateRouletteHTML(data) {
+            const participant = data.participants[0];
+            const result = data.result.outcomes[0];
+            const winningNumber = result.number;
+            const winningColor = result.color;
+            const winningType = result.type;
+            
+            const strategyAnalysis = analyzeStrategy(participant.bets, winningNumber);
+            const netResult = data.payout - data.wager;
+            const isProfit = netResult > 0;
+            
+            // Game duration
+            const startTime = new Date(data.startedAt);
+            const endTime = new Date(data.settledAt);
+            const duration = Math.round((endTime - startTime) / 1000);
+            
+            return `
+                <div class="game-header">
+                    <div class="table-name">${data.table.name}</div>
+                    <div class="game-info">
+                        <div class="info-item">
+                            <div class="info-label">🎮 Sağlayıcı</div>
+                            <div class="info-value">${data.gameProvider}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">🎩 Dealer</div>
+                            <div class="info-value">${data.dealer.name}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">👤 Oyuncu</div>
+                            <div class="info-value">${participant.screenName}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">🕐 Başlangıç</div>
+                            <div class="info-value">${startTime.toLocaleTimeString('tr-TR')}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">⏱️ Süre</div>
+                            <div class="info-value">${duration}s</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">💰 Para Birimi</div>
+                            <div class="info-value">${participant.currency}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${generateRouletteWheel(winningNumber, winningColor)}
+                
+                <div style="text-align: center; margin: 30px 0; font-size: 1.5rem;">
+                    <div style="background: rgba(255,215,0,0.2); padding: 20px; border-radius: 15px; border: 2px solid #FFD700;">
+                        <strong>🎯 Kazanan Sayı: ${winningNumber} (${winningColor === 'Red' ? '🔴 Kırmızı' : winningColor === 'Black' ? '⚫ Siyah' : '🟢 Yeşil'}, ${winningType})</strong>
+                    </div>
+                </div>
+                
+                ${generateRouletteBoard(participant.bets, winningNumber)}
+                
+                <div class="bets-analysis">
+                    <div class="bets-section">
+                        <div class="section-title">💰 Tüm Bahisler</div>
+                        ${participant.bets.map(bet => {
+                            const isWin = bet.payout > bet.stake;
+                            return `
+                                <div class="bet-item">
+                                    <div class="bet-name">${getBetType(bet.code)}</div>
+                                    <div class="bet-details">
+                                        <div class="bet-amount-display ${isWin ? 'bet-win' : 'bet-lose'}">
+                                            ${bet.stake} → ${bet.payout} ${participant.currency}
+                                        </div>
+                                        <div class="bet-payout">
+                                            ${isWin ? `+${bet.payout - bet.stake}` : `-${bet.stake}`} ${participant.currency}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="bets-section">
+                        <div class="section-title">📊 Strateji Analizi</div>
+                        <div class="strategy-analysis">
+                            <div style="margin-bottom: 15px;">
+                                <strong>🎯 Strateji:</strong> ${strategyAnalysis.strategy}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>⚖️ Risk Seviyesi:</strong> ${strategyAnalysis.riskLevel}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>📈 Masa Kapsamı:</strong> %${strategyAnalysis.coverage} (${strategyAnalysis.totalBets}/37 sayı)
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>🎲 Direkt Sayı Bahisleri:</strong> ${strategyAnalysis.straightBets}
+                            </div>
+                            <div>
+                                <strong>🎯 Kazanan Bahis:</strong> ${strategyAnalysis.winningBets}/${strategyAnalysis.totalBets}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bets-section">
+                        <div class="section-title">🏆 Kazanan Bahisler</div>
+                        ${participant.bets.filter(bet => bet.payout > bet.stake).length > 0 ? 
+                            participant.bets.filter(bet => bet.payout > bet.stake).map(bet => `
+                                <div class="bet-item" style="background: rgba(39,174,96,0.2); border: 1px solid #27AE60;">
+                                    <div class="bet-name">🎉 ${getBetType(bet.code)}</div>
+                                    <div class="bet-details">
+                                        <div class="bet-amount-display bet-win">
+                                            ${bet.stake} → ${bet.payout} ${participant.currency}
+                                        </div>
+                                        <div class="bet-payout bet-win">
+                                            +${bet.payout - bet.stake} ${participant.currency} (${((bet.payout / bet.stake) * 100).toFixed(0)}%)
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('') : 
+                            '<div style="text-align: center; opacity: 0.7; padding: 20px;">😔 Bu sefer kazanan bahis olmadı</div>'
+                        }
+                    </div>
+                </div>
+                
+                <div class="summary-section">
+                    <div class="summary-title">📊 Oyun Özeti</div>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">💰 Toplam Bahis</div>
+                            <div class="summary-value">${data.wager.toFixed(2)} ${data.currency}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">🎯 Toplam Kazanç</div>
+                            <div class="summary-value">${data.payout.toFixed(2)} ${data.currency}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">📈 Net Sonuç</div>
+                            <div class="summary-value" style="color: ${isProfit ? '#27AE60' : '#E74C3C'}">
+                                ${isProfit ? '+' : ''}${netResult.toFixed(2)} ${data.currency}
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">📊 ROI</div>
+                            <div class="summary-value" style="color: ${isProfit ? '#27AE60' : '#E74C3C'}">
+                                ${((data.payout / data.wager) * 100).toFixed(1)}%
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">🎲 Toplam Bahis Sayısı</div>
+                            <div class="summary-value">${participant.bets.length}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">🏆 Başarı Oranı</div>
+                            <div class="summary-value">${((strategyAnalysis.winningBets / strategyAnalysis.totalBets) * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255,215,0,0.1); border-radius: 15px;">
+                        <h4 style="color: #FFD700; margin-bottom: 15px;">🎯 Oyun Değerlendirmesi:</h4>
+                        <p style="line-height: 1.6; font-size: 16px;">
+                            ${isProfit ? 
+                                `🎉 <strong>Tebrikler!</strong> Bu tur sizin için karlı geçti. ${strategyAnalysis.strategy.toLowerCase()} kullanarak ${netResult.toFixed(2)} ${data.currency} kazandınız.` :
+                                `😔 Bu sefer şans yaver gitmedi. ${strategyAnalysis.strategy.toLowerCase()} ile oynasanız da ${Math.abs(netResult).toFixed(2)} ${data.currency} kaybettiniz.`
+                            }
+                            <br><br>
+                            <strong>Strateji Analizi:</strong> %${strategyAnalysis.coverage} masa kapsamı ile ${strategyAnalysis.riskLevel.toLowerCase()} bir yaklaşım sergiledıniz. 
+                            ${strategyAnalysis.coverage > 50 ? 
+                                'Yüksek kapsama stratejiniz kazanma şansınızı artırsa da kazançlarınızı sınırlıyor.' :
+                                'Düşük kapsama stratejiniz riskli ama yüksek kazanç potansiyeli taşıyor.'
+                            }
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function visualizeRoulette() {
+            const jsonInput = document.getElementById('jsonInput').value.trim();
+            const loadingEl = document.getElementById('loadingMessage');
+            const resultEl = document.getElementById('resultSection');
+            
+            if (!jsonInput) {
+                showMessage('error', 'Lütfen JSON verinizi yapıştırın!');
+                return;
+            }
+            
+            loadingEl.style.display = 'block';
+            resultEl.style.display = 'none';
+            
+            setTimeout(() => {
+                try {
+                    const jsonData = JSON.parse(jsonInput);
+                    
+                    if (!jsonData.data || !jsonData.data.gameProvider || !jsonData.data.gameType) {
+                        throw new Error('Geçersiz JSON formatı');
+                    }
+                    
+                    if (jsonData.data.gameProvider !== 'evolution' || jsonData.data.gameType !== 'roulette') {
+                        throw new Error('Sadece Evolution Gaming Roulette oyunları desteklenmektedir');
+                    }
+                    
+                    const html = generateRouletteHTML(jsonData.data);
+                    document.getElementById('rouletteContent').innerHTML = html;
+                    
+                    loadingEl.style.display = 'none';
+                    resultEl.style.display = 'block';
+                    
+                    // Smooth scroll to result
+                    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    showMessage('success', '🎉 Roulette masası başarıyla görselleştirildi!');
+                    
+                } catch (error) {
+                    loadingEl.style.display = 'none';
+                    showMessage('error', `❌ Hata: ${error.message}`);
+                    console.error('Roulette parsing error:', error);
+                }
+            }, 2000);
+        }
+
+        function loadExample() {
+            document.getElementById('jsonInput').value = JSON.stringify(exampleJSON, null, 2);
+            showMessage('success', '📝 Örnek Roulette JSON yüklendi! "Roulette Görselleştir" butonuna tıklayın.');
+        }
+
+        function clearAll() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('resultSection').style.display = 'none';
+            showMessage('success', '🗑️ Tüm veriler temizlendi.');
+        }
+
+        // Klavye kısayolları
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                visualizeRoulette();
+            }
+        });
+
+        // Auto-resize textarea
+        document.getElementById('jsonInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 400) + 'px';
+        });
+
+        // Sayfa yüklendiğinde URL parametresi kontrol et
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const jsonParam = urlParams.get('json');
+            if (jsonParam) {
+                try {
+                    const decodedJson = decodeURIComponent(jsonParam);
+                    document.getElementById('jsonInput').value = decodedJson;
+                    visualizeRoulette();
+                } catch (error) {
+                    console.error('URL JSON parse error:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
