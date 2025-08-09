@@ -409,6 +409,21 @@
             border: 1px solid rgba(255,215,0,0.4);
         }
         
+        .bet-amount {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FFD700;
+            color: #000;
+            font-size: 8px;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 6px;
+            min-width: 12px;
+            text-align: center;
+            z-index: 5;
+        }
+        
         .chip {
             position: absolute;
             width: 18px;
@@ -665,7 +680,7 @@
         <div class="input-section">
             <h2>📋 JSON Verinizi Yapıştırın</h2>
             <textarea id="jsonInput" placeholder='{"data": {"gameProvider": "evolution", "gameType": "roulette", ...}}'></textarea>
-             <div class="buttons">
+            <div class="buttons">
                 <button class="btn" onclick="analyzeGame()">🎯 Analiz Et</button>
                 <button class="btn btn-secondary" onclick="loadExample()">📝 Örnek</button>
                 <button class="btn btn-warning" onclick="clearAll()">🗑️ Temizle</button>
@@ -683,11 +698,11 @@
     </div>
 
     <script>
-        // Gerçek roulette masa düzeni
+        // Gerçek roulette masa düzeni (3 sıra, 12 sütun)
         const ROULETTE_LAYOUT = [
-            [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
-            [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
-            [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]
+            [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],  // Üst sıra
+            [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],  // Orta sıra  
+            [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]   // Alt sıra
         ];
 
         // Örnek JSON
@@ -715,6 +730,32 @@
                         {"code": "ROU_SquareBet1And2And4And5", "stake": 25, "payout": 0},
                         {"code": "ROU_Column2", "stake": 75, "payout": 225},
                         {"code": "ROU_StreetBet19And20And21", "stake": 60, "payout": 0}
+                    ]
+                }],
+                "result": {
+                    "outcomes": [{"number": "26", "type": "Even", "color": "Black"}],
+                    "luckyNumbers": {"6": 99, "27": 49, "31": 149}
+                },
+                "wager": 13.01,
+                "payout": 55.36
+            }
+        }; "roulette",
+                "gameSubType": "lightning",
+                "table": {"name": "Turkish Lightning Roulette"},
+                "dealer": {"name": "Deniz"},
+                "startedAt": "2025-06-17T19:38:53.801Z",
+                "settledAt": "2025-06-17T19:39:34.563Z",
+                "currency": "EUR",
+                "participants": [{
+                    "screenName": "Mustobaba",
+                    "currency": "TRY",
+                    "bets": [
+                        {"code": "ROU_26Black", "stake": 40, "payout": 1200},
+                        {"code": "ROU_DozenBet2536", "stake": 320, "payout": 960},
+                        {"code": "ROU_Red", "stake": 100, "payout": 0},
+                        {"code": "ROU_SplitBet5And8", "stake": 50, "payout": 0},
+                        {"code": "ROU_SquareBet1And2And4And5", "stake": 25, "payout": 0},
+                        {"code": "ROU_Column2", "stake": 75, "payout": 225}
                     ]
                 }],
                 "result": {
@@ -785,6 +826,7 @@
                 };
             }
 
+            // Split bet parse
             const splitMatch = code.match(/ROU_SplitBet(\d+)And(\d+)/);
             if (splitMatch) {
                 return {
@@ -794,6 +836,7 @@
                 };
             }
 
+            // Corner bet parse
             const cornerMatch = code.match(/ROU_SquareBet(\d+)And(\d+)And(\d+)And(\d+)/);
             if (cornerMatch) {
                 return {
@@ -803,6 +846,7 @@
                 };
             }
 
+            // Street bet parse
             const streetMatch = code.match(/ROU_StreetBet(\d+)And(\d+)And(\d+)/);
             if (streetMatch) {
                 return {
@@ -925,6 +969,7 @@
             const cornerBets = [];
             const streetBets = [];
             
+            // Tüm bahisleri kategorize et
             bets.forEach(bet => {
                 const parsed = parseBetCode(bet.code);
                 
@@ -948,6 +993,7 @@
                     </div>
                     
                     <div class="roulette-layout">
+                        <!-- Zero Section -->
                         <div class="zero-section">
             `;
 
@@ -962,14 +1008,17 @@
                                  style="position: relative;"
                                  title="Sayı 0${isZeroLightning ? ` - Lightning ${luckyNumbers['0']}x` : ''}${isZeroCovered && !zeroBet ? ' - Dış bahis kapsamında' : ''}">
                                 0
-                                ${zeroBet ? `<div class="chip chip-straight" title="Straight: 0 - ${zeroBet.stake} TRY">${formatAmount(zeroBet.stake)}</div>` : ''}
+                                ${zeroBet ? `
+                                    <div class="chip chip-straight" title="Straight: 0 - ${zeroBet.stake} TRY">${formatAmount(zeroBet.stake)}</div>
+                                ` : ''}
                             </div>
                         </div>
                         
+                        <!-- Main Numbers -->
                         <div class="main-numbers">
             `;
 
-            // Ana sayılar
+            // Ana sayılar (3 sıra x 12 sütun)
             for (let row = 0; row < 3; row++) {
                 for (let col = 0; col < 12; col++) {
                     const number = ROULETTE_LAYOUT[row][col];
@@ -991,33 +1040,34 @@
                         html += `<div class="chip chip-straight" title="Straight: ${number} - ${straightBet.stake} TRY">${formatAmount(straightBet.stake)}</div>`;
                     }
 
-                    // Split bet chips
+                    // Split bet chips - bu sayının dahil olduğu tüm split betler için
                     splitBets.forEach(splitBet => {
                         if (splitBet.parsed.numbers.includes(number)) {
+                            // Split'in hangi sayısı olduğuna göre pozisyon belirle
                             const isFirstNumber = splitBet.parsed.numbers[0] === number;
-                            if (isFirstNumber) {
+                            if (isFirstNumber) { // Sadece ilk sayıda chip göster
                                 html += `<div class="chip chip-split" title="Split: ${splitBet.parsed.numbers.join('-')} - ${splitBet.stake} TRY">${formatAmount(splitBet.stake)}</div>`;
                             }
                         }
                     });
 
-                    // Corner bet chips
+                    // Corner bet chips - sol üst köşede chip göster
                     cornerBets.forEach(cornerBet => {
                         if (cornerBet.parsed.numbers.includes(number)) {
                             const sortedNumbers = cornerBet.parsed.numbers.sort((a, b) => a - b);
                             const isTopLeftCorner = sortedNumbers[0] === number;
-                            if (isTopLeftCorner) {
+                            if (isTopLeftCorner) { // Sadece sol üst köşede chip göster
                                 html += `<div class="chip chip-corner" title="Corner: ${sortedNumbers.join(',')} - ${cornerBet.stake} TRY">${formatAmount(cornerBet.stake)}</div>`;
                             }
                         }
                     });
 
-                    // Street bet chips
+                    // Street bet chips - en sol sayıda chip göster
                     streetBets.forEach(streetBet => {
                         if (streetBet.parsed.numbers.includes(number)) {
                             const sortedNumbers = streetBet.parsed.numbers.sort((a, b) => a - b);
                             const isLeftmostNumber = sortedNumbers[0] === number;
-                            if (isLeftmostNumber) {
+                            if (isLeftmostNumber) { // Sadece en sol sayıda chip göster
                                 html += `<div class="chip chip-street" title="Street: ${sortedNumbers.join(',')} - ${streetBet.stake} TRY">${formatAmount(streetBet.stake)}</div>`;
                             }
                         }
@@ -1030,10 +1080,11 @@
             html += `
                         </div>
                         
+                        <!-- Outside Bets -->
                         <div class="outside-bets">
             `;
 
-            // Column bets
+            // Dış bahisler
             const outsideBetOrder = [
                 {code: 'ROU_Column3', name: '3. Sütun'},
                 {code: 'ROU_Column2', name: '2. Sütun'},
@@ -1058,10 +1109,11 @@
                         </div>
                     </div>
                     
+                    <!-- Dozen and Other Outside Bets -->
                     <div class="dozen-column-section">
             `;
 
-            // Dozen bets
+            // Düzine bahisleri
             const dozenBets = [
                 {code: 'ROU_DozenBet112', name: '1st 12'},
                 {code: 'ROU_DozenBet1324', name: '2nd 12'},
@@ -1085,10 +1137,11 @@
             html += `
                     </div>
                     
+                    <!-- Even Money Bets -->
                     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 8px;">
             `;
 
-            // Even money bets
+            // Eşit para bahisleri
             const evenMoneyBets = [
                 {code: 'ROU_1to18', name: '1-18'},
                 {code: 'ROU_Even', name: 'Even'},
@@ -1116,6 +1169,7 @@
             html += `
                     </div>
                     
+                    <!-- Bet Legend -->
                     <div class="bet-legend">
                         <div class="legend-title">🎯 Bahis Türleri ve Çipler</div>
                         <div class="legend-grid">
@@ -1153,9 +1207,12 @@
             const bets = participant.bets;
             const coverage = calculateCoverage(bets);
             const winningBets = bets.filter(bet => bet.payout > bet.stake).length;
+            const netResult = data.payout - data.wager;
+            const isProfit = netResult > 0;
 
             let html = '<div class="analysis-section">';
 
+            // Tüm bahisler
             html += `
                 <div class="analysis-card">
                     <div class="card-title">💰 Tüm Bahisler (${bets.length})</div>
@@ -1173,6 +1230,7 @@
                 </div>
             `;
 
+            // İç bahisler
             if (coverage.insideBets.length > 0) {
                 html += `
                     <div class="analysis-card">
@@ -1192,10 +1250,17 @@
                 `;
             }
 
+            // Dış bahisler
             if (coverage.outsideBets.length > 0) {
+                const uniqueNumbers = new Set();
+                coverage.outsideBets.forEach(bet => bet.numbers.forEach(num => uniqueNumbers.add(num)));
+
                 html += `
                     <div class="analysis-card">
-                        <div class="card-title">🎯 Dış Bahisler</div>
+                        <div class="card-title">🎯 Dış Bahis Kapsamı</div>
+                        <div style="text-align: center; background: rgba(255,215,0,0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                            <strong>Net Kapsam: ${uniqueNumbers.size}/36 sayı</strong>
+                        </div>
                         ${coverage.outsideBets.map(bet => `
                             <div class="outside-bet-item ${bet.isWin ? '' : 'lose'}">
                                 <div class="bet-name">${bet.name}</div>
@@ -1210,6 +1275,25 @@
                     </div>
                 `;
             }
+
+            // Kazanan bahisler
+            const winningBetsData = bets.filter(bet => bet.payout > bet.stake);
+            html += `
+                <div class="analysis-card">
+                    <div class="card-title">🏆 Kazanan Bahisler</div>
+                    ${winningBetsData.length > 0 ? 
+                        winningBetsData.map(bet => `
+                            <div class="bet-item" style="background: rgba(39,174,96,0.2);">
+                                <div class="bet-name">🎉 ${getBetName(bet.code)}</div>
+                                <div class="bet-amount-display bet-win">
+                                    +${bet.payout - bet.stake} TRY
+                                </div>
+                            </div>
+                        `).join('') : 
+                        '<div style="text-align: center; padding: 20px; opacity: 0.7;">😔 Kazanan bahis yok</div>'
+                    }
+                </div>
+            `;
 
             html += '</div>';
             return html;
@@ -1408,12 +1492,9 @@
         });
 
         // Textarea auto-resize
-        document.addEventListener('DOMContentLoaded', function() {
-            const textarea = document.getElementById('jsonInput');
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 300) + 'px';
-            });
+        document.getElementById('jsonInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
         });
     </script>
 </body>
