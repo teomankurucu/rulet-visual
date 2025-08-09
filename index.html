@@ -681,9 +681,9 @@
             <h2>📋 JSON Verinizi Yapıştırın</h2>
             <textarea id="jsonInput" placeholder='{"data": {"gameProvider": "evolution", "gameType": "roulette", ...}}'></textarea>
             <div class="buttons">
-                <button class="btn" onclick="analyzeGame()">🎯 Analiz Et</button>
-                <button class="btn btn-secondary" onclick="loadExample()">📝 Örnek</button>
-                <button class="btn btn-warning" onclick="clearAll()">🗑️ Temizle</button>
+                <button class="btn" id="analyzeBtn">🎯 Analiz Et</button>
+                <button class="btn btn-secondary" id="exampleBtn">📝 Örnek</button>
+                <button class="btn btn-warning" id="clearBtn">🗑️ Temizle</button>
             </div>
         </div>
         
@@ -709,7 +709,7 @@
         const EXAMPLE_JSON = {
             "data": {
                 "gameProvider": "evolution",
-                "gameType": "roulette",
+                "gameType": "roulette", 
                 "gameSubType": "lightning",
                 "table": {"name": "Turkish Lightning Roulette"},
                 "dealer": {"name": "Deniz"},
@@ -1483,6 +1483,13 @@
             document.querySelectorAll('.message').forEach(el => el.style.display = 'none');
             showMessage('success', '🗑️ Temizlendi.');
         }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('analyzeBtn').addEventListener('click', analyzeGame);
+            document.getElementById('exampleBtn').addEventListener('click', loadExample);
+            document.getElementById('clearBtn').addEventListener('click', clearAll);
+        });
 
         // Klavye kısayolları
         document.addEventListener('keydown', function(event) {
