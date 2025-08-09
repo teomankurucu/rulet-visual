@@ -426,29 +426,52 @@
         
         .chip {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             border: 2px solid #FFD700;
-            background: linear-gradient(45deg, #E74C3C, #C0392B);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
+            font-size: 7px;
             font-weight: bold;
             color: white;
             z-index: 10;
             animation: chipGlow 2s ease-in-out infinite;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         @keyframes chipGlow {
-            0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.6); }
-            50% { box-shadow: 0 0 12px rgba(255,215,0,0.9); }
+            0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.6), 0 2px 4px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 0 12px rgba(255,215,0,0.9), 0 2px 4px rgba(0,0,0,0.3); }
         }
         
-        .split-chip { top: -10px; right: -10px; }
-        .corner-chip { top: -10px; right: -10px; }
-        .street-chip { top: 50%; right: -15px; transform: translateY(-50%); }
+        .chip-straight { 
+            background: linear-gradient(45deg, #E74C3C, #C0392B);
+            top: 2px; 
+            left: 2px; 
+        }
+        .chip-split { 
+            background: linear-gradient(45deg, #3498DB, #2980B9);
+            top: -8px; 
+            right: -8px; 
+        }
+        .chip-corner { 
+            background: linear-gradient(45deg, #F39C12, #E67E22);
+            bottom: -8px; 
+            right: -8px; 
+        }
+        .chip-street { 
+            background: linear-gradient(45deg, #9B59B6, #8E44AD);
+            top: 50%; 
+            right: -12px; 
+            transform: translateY(-50%); 
+        }
+        .chip-outside { 
+            background: linear-gradient(45deg, #27AE60, #229954);
+            top: 2px; 
+            right: 2px; 
+        }
         
         .bet-legend {
             background: rgba(0,0,0,0.3);
@@ -697,6 +720,36 @@
                     "screenName": "Mustobaba",
                     "currency": "TRY",
                     "bets": [
+                        {"code": "ROU_13Black", "stake": 50, "payout": 0},
+                        {"code": "ROU_14Red", "stake": 75, "payout": 0},
+                        {"code": "ROU_SplitBet13And14", "stake": 100, "payout": 0},
+                        {"code": "ROU_26Black", "stake": 40, "payout": 1200},
+                        {"code": "ROU_DozenBet2536", "stake": 320, "payout": 960},
+                        {"code": "ROU_Red", "stake": 100, "payout": 0},
+                        {"code": "ROU_SplitBet5And8", "stake": 50, "payout": 0},
+                        {"code": "ROU_SquareBet1And2And4And5", "stake": 25, "payout": 0},
+                        {"code": "ROU_Column2", "stake": 75, "payout": 225},
+                        {"code": "ROU_StreetBet19And20And21", "stake": 60, "payout": 0}
+                    ]
+                }],
+                "result": {
+                    "outcomes": [{"number": "26", "type": "Even", "color": "Black"}],
+                    "luckyNumbers": {"6": 99, "27": 49, "31": 149}
+                },
+                "wager": 13.01,
+                "payout": 55.36
+            }
+        }; "roulette",
+                "gameSubType": "lightning",
+                "table": {"name": "Turkish Lightning Roulette"},
+                "dealer": {"name": "Deniz"},
+                "startedAt": "2025-06-17T19:38:53.801Z",
+                "settledAt": "2025-06-17T19:39:34.563Z",
+                "currency": "EUR",
+                "participants": [{
+                    "screenName": "Mustobaba",
+                    "currency": "TRY",
+                    "bets": [
                         {"code": "ROU_26Black", "stake": 40, "payout": 1200},
                         {"code": "ROU_DozenBet2536", "stake": 320, "payout": 960},
                         {"code": "ROU_Red", "stake": 100, "payout": 0},
@@ -911,21 +964,23 @@
 
         // Gerçek roulette masası oluştur
         function createRouletteTable(bets, winningNumber, luckyNumbers, coverage) {
-            const betMap = new Map();
+            const straightBets = new Map();
             const splitBets = [];
             const cornerBets = [];
             const streetBets = [];
             
-            // Bahisleri kategorize et
-            coverage.insideBets.forEach(bet => {
-                if (bet.type === 'straight') {
-                    betMap.set(bet.parsed.number, bet);
-                } else if (bet.type === 'split') {
-                    splitBets.push(bet);
-                } else if (bet.type === 'corner') {
-                    cornerBets.push(bet);
-                } else if (bet.type === 'street') {
-                    streetBets.push(bet);
+            // Tüm bahisleri kategorize et
+            bets.forEach(bet => {
+                const parsed = parseBetCode(bet.code);
+                
+                if (parsed.type === 'straight') {
+                    straightBets.set(parsed.number, bet);
+                } else if (parsed.type === 'split') {
+                    splitBets.push({...bet, parsed});
+                } else if (parsed.type === 'corner') {
+                    cornerBets.push({...bet, parsed});
+                } else if (parsed.type === 'street') {
+                    streetBets.push({...bet, parsed});
                 }
             });
 
@@ -943,16 +998,19 @@
             `;
 
             // Zero
-            const zeroBet = betMap.get(0);
+            const zeroBet = straightBets.get(0);
             const isZeroWinning = winningNumber == 0;
             const isZeroLightning = luckyNumbers && luckyNumbers.hasOwnProperty('0');
             const isZeroCovered = coverage.coveredNumbers.includes(0);
 
             html += `
                             <div class="number-cell green zero-cell ${zeroBet ? 'bet' : ''} ${isZeroWinning ? 'winning' : ''} ${isZeroLightning ? 'lightning' : ''} ${isZeroCovered && !zeroBet ? 'covered' : ''}" 
+                                 style="position: relative;"
                                  title="Sayı 0${isZeroLightning ? ` - Lightning ${luckyNumbers['0']}x` : ''}${isZeroCovered && !zeroBet ? ' - Dış bahis kapsamında' : ''}">
                                 0
-                                ${zeroBet ? `<div class="bet-amount">${formatAmount(zeroBet.stake)}</div>` : ''}
+                                ${zeroBet ? `
+                                    <div class="chip chip-straight" title="Straight: 0 - ${zeroBet.stake} TRY">${formatAmount(zeroBet.stake)}</div>
+                                ` : ''}
                             </div>
                         </div>
                         
@@ -965,37 +1023,53 @@
                 for (let col = 0; col < 12; col++) {
                     const number = ROULETTE_LAYOUT[row][col];
                     const color = ROULETTE_COLORS[number];
-                    const bet = betMap.get(number);
+                    const straightBet = straightBets.get(number);
                     const isWinning = winningNumber == number;
                     const isLightning = luckyNumbers && luckyNumbers.hasOwnProperty(number.toString());
                     const isCovered = coverage.coveredNumbers.includes(number);
 
                     html += `
-                        <div class="number-cell ${color} ${bet ? 'bet' : ''} ${isWinning ? 'winning' : ''} ${isLightning ? 'lightning' : ''} ${isCovered && !bet ? 'covered' : ''}"
+                        <div class="number-cell ${color} ${straightBet ? 'bet' : ''} ${isWinning ? 'winning' : ''} ${isLightning ? 'lightning' : ''} ${isCovered && !straightBet ? 'covered' : ''}"
                              style="position: relative;"
-                             title="Sayı ${number}${isLightning ? ` - Lightning ${luckyNumbers[number]}x` : ''}${isCovered && !bet ? ' - Dış bahis kapsamında' : ''}">
+                             title="Sayı ${number}${isLightning ? ` - Lightning ${luckyNumbers[number]}x` : ''}${isCovered && !straightBet ? ' - Dış bahis kapsamında' : ''}">
                             ${number}
-                            ${bet ? `<div class="bet-amount">${formatAmount(bet.stake)}</div>` : ''}
                     `;
 
-                    // Split bet chips ekle
+                    // Straight up bet chip
+                    if (straightBet) {
+                        html += `<div class="chip chip-straight" title="Straight: ${number} - ${straightBet.stake} TRY">${formatAmount(straightBet.stake)}</div>`;
+                    }
+
+                    // Split bet chips - bu sayının dahil olduğu tüm split betler için
                     splitBets.forEach(splitBet => {
                         if (splitBet.parsed.numbers.includes(number)) {
-                            html += `<div class="chip split-chip" title="Split: ${splitBet.parsed.numbers.join('-')}">${formatAmount(splitBet.stake)}</div>`;
+                            // Split'in hangi sayısı olduğuna göre pozisyon belirle
+                            const isFirstNumber = splitBet.parsed.numbers[0] === number;
+                            if (isFirstNumber) { // Sadece ilk sayıda chip göster
+                                html += `<div class="chip chip-split" title="Split: ${splitBet.parsed.numbers.join('-')} - ${splitBet.stake} TRY">${formatAmount(splitBet.stake)}</div>`;
+                            }
                         }
                     });
 
-                    // Corner bet chips ekle
+                    // Corner bet chips - sol üst köşede chip göster
                     cornerBets.forEach(cornerBet => {
-                        if (cornerBet.parsed.numbers.includes(number) && cornerBet.parsed.numbers[0] === number) {
-                            html += `<div class="chip corner-chip" title="Corner: ${cornerBet.parsed.numbers.join(',')}">${formatAmount(cornerBet.stake)}</div>`;
+                        if (cornerBet.parsed.numbers.includes(number)) {
+                            const sortedNumbers = cornerBet.parsed.numbers.sort((a, b) => a - b);
+                            const isTopLeftCorner = sortedNumbers[0] === number;
+                            if (isTopLeftCorner) { // Sadece sol üst köşede chip göster
+                                html += `<div class="chip chip-corner" title="Corner: ${sortedNumbers.join(',')} - ${cornerBet.stake} TRY">${formatAmount(cornerBet.stake)}</div>`;
+                            }
                         }
                     });
 
-                    // Street bet chips ekle
+                    // Street bet chips - en sol sayıda chip göster
                     streetBets.forEach(streetBet => {
-                        if (streetBet.parsed.numbers.includes(number) && streetBet.parsed.numbers[0] === number) {
-                            html += `<div class="chip street-chip" title="Street: ${streetBet.parsed.numbers.join(',')}">${formatAmount(streetBet.stake)}</div>`;
+                        if (streetBet.parsed.numbers.includes(number)) {
+                            const sortedNumbers = streetBet.parsed.numbers.sort((a, b) => a - b);
+                            const isLeftmostNumber = sortedNumbers[0] === number;
+                            if (isLeftmostNumber) { // Sadece en sol sayıda chip göster
+                                html += `<div class="chip chip-street" title="Street: ${sortedNumbers.join(',')} - ${streetBet.stake} TRY">${formatAmount(streetBet.stake)}</div>`;
+                            }
                         }
                     });
 
@@ -1023,9 +1097,10 @@
                 
                 html += `
                     <div class="outside-bet-cell column-bet ${outsideBet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
+                         style="position: relative;"
                          title="${betInfo.name}${outsideBet ? ` - ${outsideBet.stake} TRY` : ''}">
                         ${betInfo.name}
-                        ${outsideBet ? `<div class="bet-amount">${formatAmount(outsideBet.stake)}</div>` : ''}
+                        ${outsideBet ? `<div class="chip chip-outside" title="${betInfo.name} - ${outsideBet.stake} TRY">${formatAmount(outsideBet.stake)}</div>` : ''}
                     </div>
                 `;
             });
@@ -1051,9 +1126,10 @@
                 
                 html += `
                     <div class="dozen-bet ${outsideBet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
+                         style="position: relative;"
                          title="${betInfo.name}${outsideBet ? ` - ${outsideBet.stake} TRY` : ''}">
                         ${betInfo.name}
-                        ${outsideBet ? `<div class="bet-amount">${formatAmount(outsideBet.stake)}</div>` : ''}
+                        ${outsideBet ? `<div class="chip chip-outside" title="${betInfo.name} - ${outsideBet.stake} TRY">${formatAmount(outsideBet.stake)}</div>` : ''}
                     </div>
                 `;
             });
@@ -1082,10 +1158,10 @@
                 
                 html += `
                     <div class="outside-bet-cell ${outsideBet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
-                         style="background: ${bgColor}; color: white;"
+                         style="background: ${bgColor}; color: white; position: relative;"
                          title="${betInfo.name}${outsideBet ? ` - ${outsideBet.stake} TRY` : ''}">
                         ${betInfo.name}
-                        ${outsideBet ? `<div class="bet-amount">${formatAmount(outsideBet.stake)}</div>` : ''}
+                        ${outsideBet ? `<div class="chip chip-outside" title="${betInfo.name} - ${outsideBet.stake} TRY">${formatAmount(outsideBet.stake)}</div>` : ''}
                     </div>
                 `;
             });
@@ -1095,31 +1171,27 @@
                     
                     <!-- Bet Legend -->
                     <div class="bet-legend">
-                        <div class="legend-title">🎯 Bahis Türleri Açıklaması</div>
+                        <div class="legend-title">🎯 Bahis Türleri ve Çipler</div>
                         <div class="legend-grid">
                             <div class="legend-item">
-                                <div class="legend-color" style="background: #DC143C;"></div>
+                                <div class="legend-color" style="background: linear-gradient(45deg, #E74C3C, #C0392B); border-radius: 50%; width: 16px; height: 16px;"></div>
                                 <span>Straight Up (35:1)</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background: #FF6B35;"></div>
+                                <div class="legend-color" style="background: linear-gradient(45deg, #3498DB, #2980B9); border-radius: 50%; width: 16px; height: 16px;"></div>
                                 <span>Split (17:1)</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background: #F39C12;"></div>
+                                <div class="legend-color" style="background: linear-gradient(45deg, #F39C12, #E67E22); border-radius: 50%; width: 16px; height: 16px;"></div>
                                 <span>Corner (8:1)</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background: #27AE60;"></div>
+                                <div class="legend-color" style="background: linear-gradient(45deg, #9B59B6, #8E44AD); border-radius: 50%; width: 16px; height: 16px;"></div>
                                 <span>Street (11:1)</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color" style="background: #3498DB;"></div>
-                                <span>Column/Dozen (2:1)</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background: #9B59B6;"></div>
-                                <span>Even Money (1:1)</span>
+                                <div class="legend-color" style="background: linear-gradient(45deg, #27AE60, #229954); border-radius: 50%; width: 16px; height: 16px;"></div>
+                                <span>Outside Bets</span>
                             </div>
                         </div>
                     </div>
