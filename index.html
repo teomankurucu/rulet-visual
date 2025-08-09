@@ -255,15 +255,16 @@
             margin-top: 3px;
         }
         
-        .roulette-board {
+        .roulette-table {
             background: #0F4C3A;
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 25px;
             margin: 25px 0;
             border: 3px solid #FFD700;
+            overflow-x: auto;
         }
         
-        .board-title {
+        .table-title {
             text-align: center;
             font-size: 1.3rem;
             color: #FFD700;
@@ -279,36 +280,111 @@
             margin-bottom: 20px;
         }
         
-        .numbers-grid {
+        .roulette-layout {
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 3px;
-            margin-bottom: 15px;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px;
+            align-items: start;
+            min-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .zero-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
         
         .number-cell {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 35px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 14px;
-            border-radius: 6px;
+            font-size: 13px;
+            border-radius: 4px;
             position: relative;
             transition: all 0.3s ease;
             cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.3);
         }
         
         .number-cell:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
+            z-index: 10;
         }
         
         .number-cell.red { background: #DC143C; color: white; }
         .number-cell.black { background: #2F2F2F; color: white; }
         .number-cell.green { background: #228B22; color: white; }
         
-        .number-cell.bet {
+        .zero-cell {
+            width: 50px;
+            height: 110px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 16px;
+        }
+        
+        .main-numbers {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+        }
+        
+        .outside-bets {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .outside-bet-cell {
+            width: 80px;
+            height: 35px;
+            background: #1B4D35;
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .outside-bet-cell:hover {
+            background: #2A6B47;
+            transform: scale(1.05);
+        }
+        
+        .dozen-column-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .dozen-bet, .column-bet {
+            background: #1B4D35;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dozen-bet:hover, .column-bet:hover {
+            background: #2A6B47;
+            transform: scale(1.02);
+        }
+        
+        .number-cell.bet, .outside-bet-cell.bet, .dozen-bet.bet, .column-bet.bet {
             border: 2px solid #FFD700;
             box-shadow: 0 0 10px rgba(255,215,0,0.6);
         }
@@ -319,32 +395,92 @@
         }
         
         @keyframes winningPulse {
-            0%, 100% { transform: scale(1.1); }
-            50% { transform: scale(1.2); }
+            0%, 100% { transform: scale(1.1); box-shadow: 0 0 15px rgba(255,215,0,0.8); }
+            50% { transform: scale(1.15); box-shadow: 0 0 25px rgba(255,215,0,1); }
         }
         
-        .number-cell.lightning {
+        .number-cell.lightning, .outside-bet-cell.lightning {
             border: 2px solid #FF6B35;
             box-shadow: 0 0 10px rgba(255,107,53,0.6);
         }
         
-        .number-cell.covered {
-            background: rgba(255,215,0,0.2) !important;
+        .number-cell.covered, .outside-bet-cell.covered {
+            background: rgba(255,215,0,0.15) !important;
             border: 1px solid rgba(255,215,0,0.4);
         }
         
         .bet-amount {
             position: absolute;
-            top: -6px;
-            right: -6px;
+            top: -8px;
+            right: -8px;
             background: #FFD700;
             color: #000;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 8px;
-            min-width: 15px;
+            padding: 2px 4px;
+            border-radius: 6px;
+            min-width: 12px;
             text-align: center;
+            z-index: 5;
+        }
+        
+        .chip {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #FFD700;
+            background: linear-gradient(45deg, #E74C3C, #C0392B);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+            color: white;
+            z-index: 10;
+            animation: chipGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes chipGlow {
+            0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.6); }
+            50% { box-shadow: 0 0 12px rgba(255,215,0,0.9); }
+        }
+        
+        .split-chip { top: -10px; right: -10px; }
+        .corner-chip { top: -10px; right: -10px; }
+        .street-chip { top: 50%; right: -15px; transform: translateY(-50%); }
+        
+        .bet-legend {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .legend-title {
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid #fff;
         }
         
         .analysis-section {
@@ -499,8 +635,12 @@
         @media (max-width: 768px) {
             .header h1 { font-size: 1.8rem; }
             .container { padding: 15px; }
-            .numbers-grid { grid-template-columns: repeat(6, 1fr); }
-            .number-cell { width: 35px; height: 35px; font-size: 12px; }
+            .roulette-layout { 
+                grid-template-columns: 1fr;
+                min-width: auto;
+            }
+            .number-cell { width: 40px; height: 30px; font-size: 11px; }
+            .outside-bet-cell { width: 60px; height: 30px; font-size: 10px; }
             .analysis-section { grid-template-columns: 1fr; }
             .roulette-wheel { width: 200px; height: 200px; }
             .wheel-center { width: 60px; height: 60px; font-size: 1.2rem; }
@@ -535,6 +675,13 @@
     </div>
 
     <script>
+        // Gerçek roulette masa düzeni (3 sıra, 12 sütun)
+        const ROULETTE_LAYOUT = [
+            [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],  // Üst sıra
+            [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],  // Orta sıra  
+            [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]   // Alt sıra
+        ];
+
         // Örnek JSON
         const EXAMPLE_JSON = {
             "data": {
@@ -551,7 +698,11 @@
                     "currency": "TRY",
                     "bets": [
                         {"code": "ROU_26Black", "stake": 40, "payout": 1200},
-                        {"code": "ROU_DozenBet2536", "stake": 320, "payout": 960}
+                        {"code": "ROU_DozenBet2536", "stake": 320, "payout": 960},
+                        {"code": "ROU_Red", "stake": 100, "payout": 0},
+                        {"code": "ROU_SplitBet5And8", "stake": 50, "payout": 0},
+                        {"code": "ROU_SquareBet1And2And4And5", "stake": 25, "payout": 0},
+                        {"code": "ROU_Column2", "stake": 75, "payout": 225}
                     ]
                 }],
                 "result": {
@@ -621,6 +772,36 @@
                     color: straightMatch[2].toLowerCase()
                 };
             }
+
+            // Split bet parse
+            const splitMatch = code.match(/ROU_SplitBet(\d+)And(\d+)/);
+            if (splitMatch) {
+                return {
+                    type: 'split',
+                    numbers: [parseInt(splitMatch[1]), parseInt(splitMatch[2])],
+                    code: code
+                };
+            }
+
+            // Corner bet parse
+            const cornerMatch = code.match(/ROU_SquareBet(\d+)And(\d+)And(\d+)And(\d+)/);
+            if (cornerMatch) {
+                return {
+                    type: 'corner',
+                    numbers: [parseInt(cornerMatch[1]), parseInt(cornerMatch[2]), parseInt(cornerMatch[3]), parseInt(cornerMatch[4])],
+                    code: code
+                };
+            }
+
+            // Street bet parse
+            const streetMatch = code.match(/ROU_StreetBet(\d+)And(\d+)And(\d+)/);
+            if (streetMatch) {
+                return {
+                    type: 'street',
+                    numbers: [parseInt(streetMatch[1]), parseInt(streetMatch[2]), parseInt(streetMatch[3])],
+                    code: code
+                };
+            }
             
             return {type: 'outside', code};
         }
@@ -633,13 +814,17 @@
                        `${parsed.number} (${parsed.color === 'red' ? 'Kırmızı' : 'Siyah'})`;
             }
             
-            if (code.includes('SplitBet')) {
-                const match = code.match(/(\d+)And(\d+)/);
-                return match ? `Split: ${match[1]}-${match[2]}` : 'Split Bet';
+            if (parsed.type === 'split') {
+                return `Split: ${parsed.numbers.join('-')}`;
             }
-            
-            if (code.includes('SquareBet')) return 'Corner Bet';
-            if (code.includes('StreetBet')) return 'Street Bet';
+
+            if (parsed.type === 'corner') {
+                return `Corner: ${parsed.numbers.join(',')}`;
+            }
+
+            if (parsed.type === 'street') {
+                return `Street: ${parsed.numbers.join(',')}`;
+            }
             
             const outsideBet = OUTSIDE_BETS[code];
             return outsideBet ? outsideBet.name : code.replace('ROU_', '').replace(/([A-Z])/g, ' $1');
@@ -649,12 +834,23 @@
         function calculateCoverage(bets) {
             const covered = new Set();
             const outsideBets = [];
+            const insideBets = [];
             
             bets.forEach(bet => {
                 const parsed = parseBetCode(bet.code);
                 
                 if (parsed.type === 'straight') {
                     covered.add(parsed.number);
+                    insideBets.push({...bet, parsed, type: 'straight'});
+                } else if (parsed.type === 'split') {
+                    parsed.numbers.forEach(num => covered.add(num));
+                    insideBets.push({...bet, parsed, type: 'split'});
+                } else if (parsed.type === 'corner') {
+                    parsed.numbers.forEach(num => covered.add(num));
+                    insideBets.push({...bet, parsed, type: 'corner'});
+                } else if (parsed.type === 'street') {
+                    parsed.numbers.forEach(num => covered.add(num));
+                    insideBets.push({...bet, parsed, type: 'street'});
                 } else if (OUTSIDE_BETS[bet.code]) {
                     const outsideBet = OUTSIDE_BETS[bet.code];
                     outsideBet.numbers.forEach(num => covered.add(num));
@@ -663,23 +859,16 @@
                         stake: bet.stake,
                         payout: bet.payout,
                         isWin: bet.payout > bet.stake,
-                        count: outsideBet.numbers.length
+                        count: outsideBet.numbers.length,
+                        code: bet.code
                     });
-                } else if (bet.code.includes('SplitBet')) {
-                    const match = bet.code.match(/(\d+)And(\d+)/);
-                    if (match) {
-                        covered.add(parseInt(match[1]));
-                        covered.add(parseInt(match[2]));
-                    }
-                } else if (bet.code.includes('SquareBet')) {
-                    const numbers = bet.code.match(/\d+/g);
-                    if (numbers) numbers.slice(0, 4).forEach(num => covered.add(parseInt(num)));
                 }
             });
             
             return {
                 coveredNumbers: Array.from(covered).sort((a, b) => a - b),
-                outsideBets
+                outsideBets,
+                insideBets
             };
         }
 
@@ -720,23 +909,37 @@
             `;
         }
 
-        // Roulette board oluştur
-        function createBoard(bets, winningNumber, luckyNumbers, coverage) {
+        // Gerçek roulette masası oluştur
+        function createRouletteTable(bets, winningNumber, luckyNumbers, coverage) {
             const betMap = new Map();
-            bets.forEach(bet => {
-                const parsed = parseBetCode(bet.code);
-                if (parsed.type === 'straight') {
-                    betMap.set(parsed.number, bet);
+            const splitBets = [];
+            const cornerBets = [];
+            const streetBets = [];
+            
+            // Bahisleri kategorize et
+            coverage.insideBets.forEach(bet => {
+                if (bet.type === 'straight') {
+                    betMap.set(bet.parsed.number, bet);
+                } else if (bet.type === 'split') {
+                    splitBets.push(bet);
+                } else if (bet.type === 'corner') {
+                    cornerBets.push(bet);
+                } else if (bet.type === 'street') {
+                    streetBets.push(bet);
                 }
             });
 
             let html = `
-                <div class="roulette-board">
-                    <div class="board-title">🎯 Roulette Masası</div>
+                <div class="roulette-table">
+                    <div class="table-title">🎯 Gerçek Roulette Masası</div>
                     <div class="coverage-info">
                         <strong>📊 Masa Kapsamı: ${coverage.coveredNumbers.length}/37 sayı (%${((coverage.coveredNumbers.length / 37) * 100).toFixed(1)})</strong><br>
                         <span style="font-size: 13px;">Kapsanan: ${coverage.coveredNumbers.join(', ')}</span>
                     </div>
+                    
+                    <div class="roulette-layout">
+                        <!-- Zero Section -->
+                        <div class="zero-section">
             `;
 
             // Zero
@@ -746,33 +949,183 @@
             const isZeroCovered = coverage.coveredNumbers.includes(0);
 
             html += `
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <div class="number-cell green ${zeroBet ? 'bet' : ''} ${isZeroWinning ? 'winning' : ''} ${isZeroLightning ? 'lightning' : ''} ${isZeroCovered && !zeroBet ? 'covered' : ''}" 
-                         style="display: inline-block; width: 60px; height: 50px; font-size: 18px;">
-                        0
-                        ${zeroBet ? `<div class="bet-amount">${formatAmount(zeroBet.stake)}</div>` : ''}
+                            <div class="number-cell green zero-cell ${zeroBet ? 'bet' : ''} ${isZeroWinning ? 'winning' : ''} ${isZeroLightning ? 'lightning' : ''} ${isZeroCovered && !zeroBet ? 'covered' : ''}" 
+                                 title="Sayı 0${isZeroLightning ? ` - Lightning ${luckyNumbers['0']}x` : ''}${isZeroCovered && !zeroBet ? ' - Dış bahis kapsamında' : ''}">
+                                0
+                                ${zeroBet ? `<div class="bet-amount">${formatAmount(zeroBet.stake)}</div>` : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Main Numbers -->
+                        <div class="main-numbers">
+            `;
+
+            // Ana sayılar (3 sıra x 12 sütun)
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 12; col++) {
+                    const number = ROULETTE_LAYOUT[row][col];
+                    const color = ROULETTE_COLORS[number];
+                    const bet = betMap.get(number);
+                    const isWinning = winningNumber == number;
+                    const isLightning = luckyNumbers && luckyNumbers.hasOwnProperty(number.toString());
+                    const isCovered = coverage.coveredNumbers.includes(number);
+
+                    html += `
+                        <div class="number-cell ${color} ${bet ? 'bet' : ''} ${isWinning ? 'winning' : ''} ${isLightning ? 'lightning' : ''} ${isCovered && !bet ? 'covered' : ''}"
+                             style="position: relative;"
+                             title="Sayı ${number}${isLightning ? ` - Lightning ${luckyNumbers[number]}x` : ''}${isCovered && !bet ? ' - Dış bahis kapsamında' : ''}">
+                            ${number}
+                            ${bet ? `<div class="bet-amount">${formatAmount(bet.stake)}</div>` : ''}
+                    `;
+
+                    // Split bet chips ekle
+                    splitBets.forEach(splitBet => {
+                        if (splitBet.parsed.numbers.includes(number)) {
+                            html += `<div class="chip split-chip" title="Split: ${splitBet.parsed.numbers.join('-')}">${formatAmount(splitBet.stake)}</div>`;
+                        }
+                    });
+
+                    // Corner bet chips ekle
+                    cornerBets.forEach(cornerBet => {
+                        if (cornerBet.parsed.numbers.includes(number) && cornerBet.parsed.numbers[0] === number) {
+                            html += `<div class="chip corner-chip" title="Corner: ${cornerBet.parsed.numbers.join(',')}">${formatAmount(cornerBet.stake)}</div>`;
+                        }
+                    });
+
+                    // Street bet chips ekle
+                    streetBets.forEach(streetBet => {
+                        if (streetBet.parsed.numbers.includes(number) && streetBet.parsed.numbers[0] === number) {
+                            html += `<div class="chip street-chip" title="Street: ${streetBet.parsed.numbers.join(',')}">${formatAmount(streetBet.stake)}</div>`;
+                        }
+                    });
+
+                    html += '</div>';
+                }
+            }
+
+            html += `
+                        </div>
+                        
+                        <!-- Outside Bets -->
+                        <div class="outside-bets">
+            `;
+
+            // Dış bahisler
+            const outsideBetOrder = [
+                {code: 'ROU_Column3', name: '3. Sütun'},
+                {code: 'ROU_Column2', name: '2. Sütun'},
+                {code: 'ROU_Column1', name: '1. Sütun'}
+            ];
+
+            outsideBetOrder.forEach(betInfo => {
+                const outsideBet = coverage.outsideBets.find(bet => bet.code === betInfo.code);
+                const isWinning = outsideBet && outsideBet.isWin;
+                
+                html += `
+                    <div class="outside-bet-cell column-bet ${outsideBet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
+                         title="${betInfo.name}${outsideBet ? ` - ${outsideBet.stake} TRY` : ''}">
+                        ${betInfo.name}
+                        ${outsideBet ? `<div class="bet-amount">${formatAmount(outsideBet.stake)}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </div>
+                    
+                    <!-- Dozen and Other Outside Bets -->
+                    <div class="dozen-column-section">
+            `;
+
+            // Düzine bahisleri
+            const dozenBets = [
+                {code: 'ROU_DozenBet112', name: '1st 12'},
+                {code: 'ROU_DozenBet1324', name: '2nd 12'},
+                {code: 'ROU_DozenBet2536', name: '3rd 12'}
+            ];
+
+            dozenBets.forEach(betInfo => {
+                const outsideBet = coverage.outsideBets.find(bet => bet.code === betInfo.code);
+                const isWinning = outsideBet && outsideBet.isWin;
+                
+                html += `
+                    <div class="dozen-bet ${outsideBet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
+                         title="${betInfo.name}${outsideBet ? ` - ${outsideBet.stake} TRY` : ''}">
+                        ${betInfo.name}
+                        ${outsideBet ? `<div class="bet-amount">${formatAmount(outsideBet.stake)}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    
+                    <!-- Even Money Bets -->
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 8px;">
+            `;
+
+            // Eşit para bahisleri
+            const evenMoneyBets = [
+                {code: 'ROU_1to18', name: '1-18'},
+                {code: 'ROU_Even', name: 'Even'},
+                {code: 'ROU_Red', name: 'Red', color: '#DC143C'},
+                {code: 'ROU_Black', name: 'Black', color: '#2F2F2F'},
+                {code: 'ROU_Odd', name: 'Odd'},
+                {code: 'ROU_19to36', name: '19-36'}
+            ];
+
+            evenMoneyBets.forEach(betInfo => {
+                const outsideBet = coverage.outsideBets.find(bet => bet.code === betInfo.code);
+                const isWinning = outsideBet && outsideBet.isWin;
+                const bgColor = betInfo.color || '#1B4D35';
+                
+                html += `
+                    <div class="outside-bet-cell ${outsideBet ? 'bet' : ''} ${isWinning ? 'winning' : ''}"
+                         style="background: ${bgColor}; color: white;"
+                         title="${betInfo.name}${outsideBet ? ` - ${outsideBet.stake} TRY` : ''}">
+                        ${betInfo.name}
+                        ${outsideBet ? `<div class="bet-amount">${formatAmount(outsideBet.stake)}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    
+                    <!-- Bet Legend -->
+                    <div class="bet-legend">
+                        <div class="legend-title">🎯 Bahis Türleri Açıklaması</div>
+                        <div class="legend-grid">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #DC143C;"></div>
+                                <span>Straight Up (35:1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #FF6B35;"></div>
+                                <span>Split (17:1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #F39C12;"></div>
+                                <span>Corner (8:1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #27AE60;"></div>
+                                <span>Street (11:1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #3498DB;"></div>
+                                <span>Column/Dozen (2:1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #9B59B6;"></div>
+                                <span>Even Money (1:1)</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
-
-            // Numbers 1-36
-            html += '<div class="numbers-grid">';
-            for (let i = 1; i <= 36; i++) {
-                const color = ROULETTE_COLORS[i];
-                const bet = betMap.get(i);
-                const isWinning = winningNumber == i;
-                const isLightning = luckyNumbers && luckyNumbers.hasOwnProperty(i.toString());
-                const isCovered = coverage.coveredNumbers.includes(i);
-
-                html += `
-                    <div class="number-cell ${color} ${bet ? 'bet' : ''} ${isWinning ? 'winning' : ''} ${isLightning ? 'lightning' : ''} ${isCovered && !bet ? 'covered' : ''}"
-                         title="Sayı ${i}${isLightning ? ` - Lightning ${luckyNumbers[i]}x` : ''}${isCovered && !bet ? ' - Dış bahis kapsamında' : ''}">
-                        ${i}
-                        ${bet ? `<div class="bet-amount">${formatAmount(bet.stake)}</div>` : ''}
-                    </div>
-                `;
-            }
-            html += '</div></div>';
+            
             return html;
         }
 
@@ -804,6 +1157,26 @@
                     }).join('')}
                 </div>
             `;
+
+            // İç bahisler
+            if (coverage.insideBets.length > 0) {
+                html += `
+                    <div class="analysis-card">
+                        <div class="card-title">🎯 İç Bahisler</div>
+                        ${coverage.insideBets.map(bet => {
+                            const isWin = bet.payout > bet.stake;
+                            return `
+                                <div class="bet-item">
+                                    <div class="bet-name">${getBetName(bet.code)}</div>
+                                    <div class="bet-amount-display ${isWin ? 'bet-win' : 'bet-lose'}">
+                                        ${bet.stake} → ${bet.payout} TRY
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
 
             // Dış bahisler
             if (coverage.outsideBets.length > 0) {
@@ -896,6 +1269,14 @@
                             <div class="summary-label">🏆 Başarı Oranı</div>
                             <div class="summary-value">${((winningBets / participant.bets.length) * 100).toFixed(1)}%</div>
                         </div>
+                        <div class="summary-item">
+                            <div class="summary-label">🎯 İç Bahisler</div>
+                            <div class="summary-value">${coverage.insideBets.length}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">🌐 Dış Bahisler</div>
+                            <div class="summary-value">${coverage.outsideBets.length}</div>
+                        </div>
                         ${luckyCount > 0 ? `
                             <div class="summary-item">
                                 <div class="summary-label">⚡ Lightning</div>
@@ -912,6 +1293,7 @@
                                 `😔 Bu sefer ${Math.abs(netResult).toFixed(2)} ${data.currency} kayıp yaşandı.`
                             }
                             ${participant.bets.length} bahis ile ${coverage.coveredNumbers.length}/37 sayı kapsamı (%${((coverage.coveredNumbers.length / 37) * 100).toFixed(1)}) elde edildi.
+                            ${coverage.insideBets.length} iç bahis ve ${coverage.outsideBets.length} dış bahis yapıldı.
                             ${luckyCount > 0 ? ` ⚡ ${luckyCount} Lightning multiplier aktifti.` : ''}
                         </p>
                     </div>
@@ -993,7 +1375,7 @@
 
                     html += createWheel(winningNumber, winningColor);
                     html += createLightningNumbers(luckyNumbers);
-                    html += createBoard(participant.bets, winningNumber, luckyNumbers, coverage);
+                    html += createRouletteTable(participant.bets, winningNumber, luckyNumbers, coverage);
                     html += createAnalysis(data);
                     html += createSummary(data);
 
