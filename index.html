@@ -681,9 +681,9 @@
             <h2>📋 JSON Verinizi Yapıştırın</h2>
             <textarea id="jsonInput" placeholder='{"data": {"gameProvider": "evolution", "gameType": "roulette", ...}}'></textarea>
             <div class="buttons">
-                <button class="btn" id="analyzeBtn">🎯 Analiz Et</button>
-                <button class="btn btn-secondary" id="exampleBtn">📝 Örnek</button>
-                <button class="btn btn-warning" id="clearBtn">🗑️ Temizle</button>
+                <button class="btn" onclick="analyzeGame()">🎯 Analiz Et</button>
+                <button class="btn btn-secondary" onclick="loadExample()">📝 Örnek</button>
+                <button class="btn btn-warning" onclick="clearAll()">🗑️ Temizle</button>
             </div>
         </div>
         
@@ -1484,14 +1484,7 @@
             showMessage('success', '🗑️ Temizlendi.');
         }
 
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('analyzeBtn').addEventListener('click', analyzeGame);
-            document.getElementById('exampleBtn').addEventListener('click', loadExample);
-            document.getElementById('clearBtn').addEventListener('click', clearAll);
-        });
-
-        // Klavye kısayolları
+        // Klavye kısayolları ve textarea auto-resize
         document.addEventListener('keydown', function(event) {
             if (event.ctrlKey && event.key === 'Enter') {
                 analyzeGame();
@@ -1499,9 +1492,11 @@
         });
 
         // Textarea auto-resize
-        document.getElementById('jsonInput').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('jsonInput').addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+            });
         });
     </script>
 </body>
